@@ -8,7 +8,6 @@ import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -94,7 +93,6 @@ public class TopActivity extends AppCompatActivity{
                         context.getString(R.string.pref_country_default));
 
                 Map<String, Object> map = new HashMap<>();
-                Log.v(LOG_TAG,country);
                 map.put("country", country);
                 Tracks tracks = spotify.getArtistTopTrack(params[0],map);
                 int size = tracks.tracks.size();
