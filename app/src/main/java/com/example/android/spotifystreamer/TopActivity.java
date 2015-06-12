@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -27,7 +27,7 @@ import kaaes.spotify.webapi.android.models.Tracks;
 /**
  * Created by DJ on 6/12/2015.
  */
-public class TopActivity extends ActionBarActivity{
+public class TopActivity extends AppCompatActivity{
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
