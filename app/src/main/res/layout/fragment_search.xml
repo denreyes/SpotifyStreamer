@@ -3,9 +3,11 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <EditText
+    <android.support.v7.widget.SearchView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:inputType="text"
+        android:iconifiedByDefault="false"
         android:id="@+id/edtSearch"
         android:hint="Artist Name"
         android:padding="20dp"/>

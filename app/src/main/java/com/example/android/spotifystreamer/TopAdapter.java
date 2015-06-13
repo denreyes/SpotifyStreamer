@@ -10,6 +10,9 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
 /**
  * Created by DJ on 6/12/2015.
  */
@@ -42,20 +45,33 @@ public class TopAdapter extends BaseAdapter{
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        View rootView = inflater.inflate(R.layout.list_item_top,parent,false);
+    public View getView(int position, View view, ViewGroup parent) {
+        TopHolder holder;
+        if (view != null) {
+            holder = (TopHolder) view.getTag();
+        } else {
+            view = inflater.inflate(R.layout.list_item_top,parent,false);
+            holder = new TopHolder(view);
+            view.setTag(holder);
+        }
 
-        ImageView imgTopArtist = (ImageView)rootView.findViewById(R.id.imgTopArtist);
-        TextView txtTrackTitle = (TextView)rootView.findViewById(R.id.txtTrackTitle);
-        TextView txtAlbum = (TextView)rootView.findViewById(R.id.txtAlbum);
-
-        txtTrackTitle.setText(trackTitle[position]);
-        txtAlbum.setText(trackAlbum[position]);
+        holder.txtTrackTitle.setText(trackTitle[position]);
+        holder.txtAlbum.setText(trackAlbum[position]);
         if(trackImage[position]!=null)
-            Picasso.with(context).load(trackImage[position]).resize(250, 250).centerCrop().into(imgTopArtist);
+            Picasso.with(context).load(trackImage[position]).resize(250, 250).centerCrop().into(holder.imgTopArtist);
         else
-            Picasso.with(context).load(R.drawable.noimg).resize(250, 250).centerCrop().into(imgTopArtist);
+            Picasso.with(context).load(R.drawable.noimg).resize(250, 250).centerCrop().into(holder.imgTopArtist);
 
-        return rootView;
+        return view;
+    }
+
+    static class TopHolder{
+        @InjectView(R.id.imgTopArtist) ImageView imgTopArtist;
+        @InjectView(R.id.txtTrackTitle) TextView txtTrackTitle;
+        @InjectView(R.id.txtAlbum) TextView txtAlbum;
+
+        public TopHolder(View view){
+            ButterKnife.inject(this, view);
+        }
     }
 }
