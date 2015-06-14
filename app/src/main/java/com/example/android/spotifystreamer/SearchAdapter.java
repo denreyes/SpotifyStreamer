@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -17,20 +19,18 @@ import butterknife.InjectView;
  * Created by DJ on 6/11/2015.
  */
 public class SearchAdapter extends BaseAdapter {
-    String[] artistNames;
-    String[] artistImages;
     LayoutInflater inflater;
     Context context;
+    ArrayList<SearchObject> list;
 
-    public SearchAdapter(String[] artistNames,String[] artistImages,Context context){
-        this.artistNames = artistNames;
-        this.artistImages = artistImages;
+    public SearchAdapter(Context context,ArrayList<SearchObject> list){
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.context = context;
+        this.list=list;
     }
 
     public int getCount() {
-        return artistNames.length;
+        return list.size();
     }
 
     @Override
@@ -54,9 +54,9 @@ public class SearchAdapter extends BaseAdapter {
             view.setTag(holder);
         }
 
-        holder.txtArtist.setText(artistNames[position]);
-        if(artistImages[position]!=null)
-            Picasso.with(context).load(artistImages[position]).resize(250, 250).centerCrop().into(holder.imgArtist);
+        holder.txtArtist.setText(list.get(position).artistNames);
+        if(list.get(position).artistImages!="")
+            Picasso.with(context).load(list.get(position).artistImages).resize(250, 250).centerCrop().into(holder.imgArtist);
         else
             Picasso.with(context).load(R.drawable.noimg).resize(250, 250).centerCrop().into(holder.imgArtist);
         return view;

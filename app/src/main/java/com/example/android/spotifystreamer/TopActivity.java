@@ -17,9 +17,11 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import butterknife.ButterKnife;
 import butterknife.InjectView;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
@@ -37,7 +39,8 @@ public class TopActivity extends AppCompatActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        getSupportFragmentManager().beginTransaction().replace(R.id.container_alpha, new TopFragment()).commit();
+        if (savedInstanceState == null)
+            getSupportFragmentManager().beginTransaction().replace(R.id.container_alpha, new TopFragment()).commit();
     }
 
     @Override
@@ -57,10 +60,9 @@ public class TopActivity extends AppCompatActivity {
     }
 
     public static class TopFragment extends Fragment {
-        @InjectView(R.id.listTop)
-        ListView listTop;
-        final Bundle bundle = new Bundle();
+        @InjectView(R.id.listTop) ListView listTop;
         static final Handler MAIN_THREAD = new Handler(Looper.getMainLooper());
+        ArrayList<TopObject> list;
 
         public TopFragment() {
 
@@ -70,76 +72,85 @@ public class TopActivity extends AppCompatActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_top, container, false);
-            if(savedInstanceState==null) {
-                SpotifyApi api = new SpotifyApi();
-                SpotifyService spotify = api.getService();
+            ButterKnife.inject(this, rootView);
+            list = new ArrayList<>();
 
-                SharedPreferences sharedPrefs =
-                        PreferenceManager.getDefaultSharedPreferences(getActivity());
-                String country = sharedPrefs.getString(getActivity().getString(R.string.pref_country_key),
-                        getActivity().getString(R.string.pref_country_default));
-
-                Map<String, Object> map = new HashMap<>();
-                map.put("country", country);
-                spotify.getArtistTopTrack(getActivity().getIntent().getStringExtra("SPOTIFY_ID"), map,
-                        new Callback<Tracks>() {
-                            @Override
-                            public void success(Tracks tracks, Response response) {
-                                int size = tracks.tracks.size();
-
-                                if (size != 0) {
-                                    String[] trackTitle = new String[size];
-                                    String[] trackAlbum = new String[size];
-                                    String[] trackImage = new String[size];
-                                    for (int x = 0; x < size; x++) {
-                                        trackTitle[x] = tracks.tracks.get(x).name;
-                                        trackAlbum[x] = tracks.tracks.get(x).album.name;
-                                        if (tracks.tracks.get(x).album.images.toString() != "[]") {
-                                            trackImage[x] = tracks.tracks.get(x).album.images.get(0).url;
-                                        }
-                                    }
-
-                                    bundle.putStringArray("TRACK_TITLE", trackTitle);
-                                    bundle.putStringArray("TRACK_ALBUM", trackAlbum);
-                                    bundle.putStringArray("TRACK_IMAGE", trackImage);
-
-                                    MAIN_THREAD.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            String[] trackTitle = bundle.getStringArray("TRACK_TITLE");
-                                            String[] trackAlbum = bundle.getStringArray("TRACK_ALBUM");
-                                            String[] trackImage = bundle.getStringArray("TRACK_IMAGE");
-
-                                            TopAdapter topAdapter = new TopAdapter(getActivity(), trackTitle, trackAlbum, trackImage);
-                                            ListView listTop = (ListView) rootView.findViewById(R.id.listTop);
-                                            listTop.setAdapter(topAdapter);
-                                        }
-                                    });
-                                } else {
-                                    MAIN_THREAD.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(getActivity(), "There are no top Tracks for this Artist", Toast.LENGTH_LONG).show();
-                                            listTop.setAdapter(null);
-                                        }
-                                    });
-                                }
-
-                            }
-
-                            @Override
-                            public void failure(RetrofitError error) {
-                                MAIN_THREAD.post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getActivity(), "Can't access the web", Toast.LENGTH_LONG).show();
-                                    }
-                                });
-                            }
-                        });
-                super.onSaveInstanceState(bundle);
+            if(savedInstanceState!=null) {
+                list = savedInstanceState.getParcelableArrayList("TOP_OBJECT");
+                TopAdapter adapter = new TopAdapter(getActivity(),list);
+                listTop.setAdapter(adapter);
             }
+            else
+                fetchSpotify();
             return rootView;
+        }
+
+        private void fetchSpotify() {
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+
+            SharedPreferences sharedPrefs =
+                    PreferenceManager.getDefaultSharedPreferences(getActivity());
+            String country = sharedPrefs.getString(getActivity().getString(R.string.pref_country_key),
+                    getActivity().getString(R.string.pref_country_default));
+
+            Map<String, Object> map = new HashMap<>();
+            map.put("country", country);
+            spotify.getArtistTopTrack(getActivity().getIntent().getStringExtra("SPOTIFY_ID"), map,
+                    new Callback<Tracks>() {
+                        @Override
+                        public void success(Tracks tracks, Response response) {
+                            querySuccess(tracks);
+                        }
+
+                        @Override
+                        public void failure(RetrofitError error) {
+                            MAIN_THREAD.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(getActivity(), "Can't access the web", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    });
+        }
+
+        private void querySuccess(Tracks tracks) {
+            int size = tracks.tracks.size();
+
+            if (size != 0) {
+                String trackTitle, trackAlbum, trackImage="";
+                for (int x = 0; x < size; x++) {
+                    trackTitle = tracks.tracks.get(x).name;
+                    trackAlbum = tracks.tracks.get(x).album.name;
+                    if (tracks.tracks.get(x).album.images.toString() != "[]") {
+                        trackImage = tracks.tracks.get(x).album.images.get(0).url;
+                    }
+                    list.add(new TopObject(trackTitle,trackAlbum,trackImage));
+                }
+
+                MAIN_THREAD.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        TopAdapter topAdapter = new TopAdapter(getActivity(), list);
+                        listTop.setAdapter(topAdapter);
+                    }
+                });
+            } else {
+                MAIN_THREAD.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getActivity(), "There are no top Tracks for this Artist", Toast.LENGTH_LONG).show();
+                        listTop.setAdapter(null);
+                    }
+                });
+            }
+        }
+
+        @Override
+        public void onSaveInstanceState(Bundle outState) {
+            super.onSaveInstanceState(outState);
+            outState.putParcelableArrayList("TOP_OBJECT",list);
         }
     }
 }

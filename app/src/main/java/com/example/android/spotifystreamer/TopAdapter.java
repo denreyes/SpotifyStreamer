@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
+
 import butterknife.ButterKnife;
 import butterknife.InjectView;
 
@@ -17,21 +19,19 @@ import butterknife.InjectView;
  * Created by DJ on 6/12/2015.
  */
 public class TopAdapter extends BaseAdapter{
-    String[] trackTitle, trackAlbum, trackImage;
     LayoutInflater inflater;
     Context context;
+    ArrayList<TopObject> list;
 
-    public TopAdapter(Context context, String[] trackTitle, String[] trackAlbum, String[] trackImage){
+    public TopAdapter(Context context, ArrayList<TopObject> list){
         inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.context = context;
-        this.trackTitle = trackTitle;
-        this.trackAlbum = trackAlbum;
-        this.trackImage = trackImage;
+        this.list = list;
     }
 
     @Override
     public int getCount() {
-        return trackTitle.length;
+        return list.size();
     }
 
     @Override
@@ -55,10 +55,10 @@ public class TopAdapter extends BaseAdapter{
             view.setTag(holder);
         }
 
-        holder.txtTrackTitle.setText(trackTitle[position]);
-        holder.txtAlbum.setText(trackAlbum[position]);
-        if(trackImage[position]!=null)
-            Picasso.with(context).load(trackImage[position]).resize(250, 250).centerCrop().into(holder.imgTopArtist);
+        holder.txtTrackTitle.setText(list.get(position).trackTitle);
+        holder.txtAlbum.setText(list.get(position).trackAlbum);
+        if(list.get(position).trackImage!=null)
+            Picasso.with(context).load(list.get(position).trackImage).resize(250, 250).centerCrop().into(holder.imgTopArtist);
         else
             Picasso.with(context).load(R.drawable.noimg).resize(250, 250).centerCrop().into(holder.imgTopArtist);
 
