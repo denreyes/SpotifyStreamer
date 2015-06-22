@@ -58,9 +58,9 @@ public class TopAdapter extends BaseAdapter{
         holder.txtTrackTitle.setText(list.get(position).trackTitle);
         holder.txtAlbum.setText(list.get(position).trackAlbum);
         if(list.get(position).trackImage!=null)
-            Picasso.with(context).load(list.get(position).trackImage).resize(250, 250).centerCrop().into(holder.imgTopArtist);
+            Picasso.with(context).load(list.get(position).trackImage).fit().centerCrop().into(holder.imgTopArtist);
         else
-            Picasso.with(context).load(R.drawable.noimg).resize(250, 250).centerCrop().into(holder.imgTopArtist);
+            Picasso.with(context).load(R.drawable.noimg).fit().centerCrop().into(holder.imgTopArtist);
 
         return view;
     }

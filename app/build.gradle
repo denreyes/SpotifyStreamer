@@ -37,4 +37,7 @@ dependencies {
     compile 'com.squareup.okhttp:okhttp:2.2.0'
 //BUTTERKNIFE
     compile 'com.jakewharton:butterknife:6.1.0'
+
+//MARKUSHI's Circle Button
+    compile 'com.github.markushi:circlebutton:1.1'
 }

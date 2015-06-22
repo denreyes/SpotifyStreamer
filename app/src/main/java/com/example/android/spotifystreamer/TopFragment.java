@@ -1,5 +1,6 @@
 package com.example.android.spotifystreamer;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -10,6 +11,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -55,6 +57,21 @@ public class TopFragment extends Fragment {
         if(arguments!=null) {
             fetchSpotify(getArguments().getString("SPOTIFY_ID"));
         }
+
+        listTop.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent i = new Intent(getActivity(),PlayerActivity.class);
+                i.putExtra("TRACK_TITLE", list.get(position).trackTitle);
+                i.putExtra("TRACK_ALBUM", list.get(position).trackAlbum);
+                i.putExtra("TRACK_IMAGE", list.get(position).trackImage);
+                i.putExtra("TRACK_ARTIST", list.get(position).trackArtist);
+                i.putExtra("TRACK_PLAY", list.get(position).trackPlay);
+                i.putExtra("TRACK_DURATION", list.get(position).trackDuration);
+                startActivity(i);
+            }
+        });
+
         return rootView;
     }
 
@@ -92,15 +109,27 @@ public class TopFragment extends Fragment {
         int size = tracks.tracks.size();
 
         if (size != 0) {
-            String trackTitle, trackAlbum, trackImage="";
+            String trackTitle, trackAlbum, trackPlay, trackImage="";
+            StringBuffer trackArtist;
+            double trackDuration;
             list = new ArrayList<>();
+
             for (int x = 0; x < size; x++) {
+                    trackArtist = new StringBuffer();
+
+                int trackSize = tracks.tracks.get(x).artists.size();
+                for(int y=0; y < trackSize; y++)
+                    trackArtist.append(tracks.tracks.get(x).artists.get(y).name + ", ");
+                trackArtist.delete(trackArtist.length()-2,trackArtist.length()-1);
+                trackDuration = tracks.tracks.get(x).duration_ms;
+                trackPlay = tracks.tracks.get(x).preview_url;
+
                 trackTitle = tracks.tracks.get(x).name;
                 trackAlbum = tracks.tracks.get(x).album.name;
                 if (tracks.tracks.get(x).album.images.toString() != "[]") {
                     trackImage = tracks.tracks.get(x).album.images.get(0).url;
                 }
-                list.add(new TopObject(trackTitle,trackAlbum,trackImage));
+                list.add(new TopObject(trackTitle,trackAlbum,trackImage,trackArtist.toString(),trackPlay,trackDuration));
             }
 
             MAIN_THREAD.post(new Runnable() {

@@ -55,10 +55,12 @@ public class SearchAdapter extends BaseAdapter {
         }
 
         holder.txtArtist.setText(list.get(position).artistNames);
-        if(list.get(position).artistImages!="")
-            Picasso.with(context).load(list.get(position).artistImages).resize(250, 250).centerCrop().into(holder.imgArtist);
-        else
-            Picasso.with(context).load(R.drawable.noimg).resize(250, 250).centerCrop().into(holder.imgArtist);
+        if(list.get(position).artistImages!="") {
+            Picasso.with(context).load(list.get(position).artistImages).fit().centerCrop().into(holder.imgArtist);
+        }
+        else {
+            Picasso.with(context).load(R.drawable.noimg).fit().centerCrop().into(holder.imgArtist);
+        }
         return view;
     }
 

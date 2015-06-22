@@ -102,9 +102,10 @@ public class SearchFragment extends Fragment {
         int artistSize = artistsPager.artists.items.size();
 
         if (artistSize != 0) {
-            String artistNames,artistImages="",spotifyId;
+                String artistNames,artistImages,spotifyId;
             list = new ArrayList<SearchObject>();
             for (int x = 0; x < artistsPager.artists.items.size(); x++) {
+                artistImages="";
                 artistNames = artistsPager.artists.items.get(x).name;
                 spotifyId = artistsPager.artists.items.get(x).id;
                 if (artistsPager.artists.items.get(x).images.toString() != "[]") {

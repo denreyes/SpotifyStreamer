@@ -21,9 +21,6 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.Se
 
         if (findViewById(R.id.container_beta) != null) {
             mTwoPane = true;
-//            if (savedInstanceState == null) {
-//                getSupportFragmentManager().beginTransaction().replace(R.id.container_beta, new TopFragment()).commit();
-//            }
         } else {
             mTwoPane = false;
         }
