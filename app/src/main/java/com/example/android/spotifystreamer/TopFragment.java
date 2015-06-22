@@ -67,7 +67,6 @@ public class TopFragment extends Fragment {
                 i.putExtra("TRACK_IMAGE", list.get(position).trackImage);
                 i.putExtra("TRACK_ARTIST", list.get(position).trackArtist);
                 i.putExtra("TRACK_PLAY", list.get(position).trackPlay);
-                i.putExtra("TRACK_DURATION", list.get(position).trackDuration);
                 startActivity(i);
             }
         });
@@ -121,15 +120,15 @@ public class TopFragment extends Fragment {
                 for(int y=0; y < trackSize; y++)
                     trackArtist.append(tracks.tracks.get(x).artists.get(y).name + ", ");
                 trackArtist.delete(trackArtist.length()-2,trackArtist.length()-1);
-                trackDuration = tracks.tracks.get(x).duration_ms;
                 trackPlay = tracks.tracks.get(x).preview_url;
 
                 trackTitle = tracks.tracks.get(x).name;
                 trackAlbum = tracks.tracks.get(x).album.name;
+                trackImage = "";
                 if (tracks.tracks.get(x).album.images.toString() != "[]") {
                     trackImage = tracks.tracks.get(x).album.images.get(0).url;
                 }
-                list.add(new TopObject(trackTitle,trackAlbum,trackImage,trackArtist.toString(),trackPlay,trackDuration));
+                list.add(new TopObject(trackTitle,trackAlbum,trackImage,trackArtist.toString(),trackPlay));
             }
 
             MAIN_THREAD.post(new Runnable() {
