@@ -52,17 +52,18 @@ public class MainActivity extends AppCompatActivity implements SearchFragment.Se
 
 
     @Override
-    public void onItemSelected(String spotifyId) {
+    public void onItemSelected(String spotifyId, String artistName) {
         if(mTwoPane){
             Bundle args = new Bundle();
-            args.putString("SPOTIFY_ID",spotifyId);
+            args.putString("SPOTIFY_ID", spotifyId);
 
             TopFragment topFragment = new TopFragment();
             topFragment.setArguments(args);
-            getSupportFragmentManager().beginTransaction().replace(R.id.container_beta,topFragment).commit();
+            getSupportFragmentManager().beginTransaction().replace(R.id.container_beta, topFragment).commit();
         }else{
             Intent i = new Intent(this,TopActivity.class);
             i.putExtra("SPOTIFY_ID",spotifyId);
+            i.putExtra("ARTIST_NAME",artistName);
             startActivity(i);
         }
     }

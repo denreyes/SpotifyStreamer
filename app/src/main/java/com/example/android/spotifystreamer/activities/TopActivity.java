@@ -23,6 +23,10 @@ public class TopActivity extends AppCompatActivity {
         if (savedInstanceState == null) {
             Bundle args = new Bundle();
             args.putString("SPOTIFY_ID", getIntent().getStringExtra("SPOTIFY_ID"));
+
+            getSupportActionBar().setTitle(getIntent().getStringExtra("ARTIST_NAME"));
+            getSupportActionBar().setSubtitle("Top 10 Tracks");
+
             TopFragment topFragment = new TopFragment();
             topFragment.setArguments(args);
 

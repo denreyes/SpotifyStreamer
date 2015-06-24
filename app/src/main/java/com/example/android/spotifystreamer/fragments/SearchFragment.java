@@ -58,10 +58,9 @@ public class SearchFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 if(list.get(position)!=null){
-                    ((SearchCallback)getActivity()).onItemSelected(list.get(position).spotifyId);
+                    ((SearchCallback)getActivity()).onItemSelected(list.get(position).spotifyId,
+                            list.get(position).artistNames);
                 }
-//                Intent i = new Intent(getActivity(), TopActivity.class).putExtra("SPOTIFY_ID", list.get(position).spotifyId);
-//                getActivity().startActivity(i);
             }
         });
         fetchSpotify();
@@ -145,6 +144,6 @@ public class SearchFragment extends Fragment {
     }
 
     public interface SearchCallback {
-        public void onItemSelected(String spotifyId);
+        public void onItemSelected(String spotifyId,String artistName);
     }
 }

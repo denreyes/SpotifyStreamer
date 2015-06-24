@@ -69,11 +69,6 @@ public class TopFragment extends Fragment {
                 Intent i = new Intent(getActivity(),PlayerActivity.class);
                 i.putParcelableArrayListExtra("TOP_OBJECT",list);
                 i.putExtra("POSITION",position);
-//                i.putExtra("TRACK_TITLE", list.get(position).trackTitle);
-//                i.putExtra("TRACK_ALBUM", list.get(position).trackAlbum);
-//                i.putExtra("TRACK_IMAGE", list.get(position).trackImage);
-//                i.putExtra("TRACK_ARTIST", list.get(position).trackArtist);
-//                i.putExtra("TRACK_PLAY", list.get(position).trackPlay);
                 startActivity(i);
             }
         });
@@ -115,13 +110,12 @@ public class TopFragment extends Fragment {
         int size = tracks.tracks.size();
 
         if (size != 0) {
-            String trackTitle, trackAlbum, trackPlay, trackImage="";
+            String trackTitle, trackAlbum, trackPlay, trackImage;
             StringBuffer trackArtist;
-            double trackDuration;
             list = new ArrayList<>();
 
             for (int x = 0; x < size; x++) {
-                    trackArtist = new StringBuffer();
+                trackArtist = new StringBuffer();
 
                 int trackSize = tracks.tracks.get(x).artists.size();
                 for(int y=0; y < trackSize; y++)
