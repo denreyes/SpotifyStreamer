@@ -1,4 +1,4 @@
-package com.example.android.spotifystreamer;
+package com.example.android.spotifystreamer.fragments;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -14,6 +14,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.example.android.spotifystreamer.R;
+import com.example.android.spotifystreamer.adapter.TopAdapter;
+import com.example.android.spotifystreamer.activities.PlayerActivity;
+import com.example.android.spotifystreamer.object.TopObject;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -62,11 +67,13 @@ public class TopFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent i = new Intent(getActivity(),PlayerActivity.class);
-                i.putExtra("TRACK_TITLE", list.get(position).trackTitle);
-                i.putExtra("TRACK_ALBUM", list.get(position).trackAlbum);
-                i.putExtra("TRACK_IMAGE", list.get(position).trackImage);
-                i.putExtra("TRACK_ARTIST", list.get(position).trackArtist);
-                i.putExtra("TRACK_PLAY", list.get(position).trackPlay);
+                i.putParcelableArrayListExtra("TOP_OBJECT",list);
+                i.putExtra("POSITION",position);
+//                i.putExtra("TRACK_TITLE", list.get(position).trackTitle);
+//                i.putExtra("TRACK_ALBUM", list.get(position).trackAlbum);
+//                i.putExtra("TRACK_IMAGE", list.get(position).trackImage);
+//                i.putExtra("TRACK_ARTIST", list.get(position).trackArtist);
+//                i.putExtra("TRACK_PLAY", list.get(position).trackPlay);
                 startActivity(i);
             }
         });

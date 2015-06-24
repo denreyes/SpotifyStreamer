@@ -1,4 +1,4 @@
-package com.example.android.spotifystreamer;
+package com.example.android.spotifystreamer.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,6 +7,8 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+
+import com.example.android.spotifystreamer.R;
 
 /**
  * Created by DJ on 6/12/2015.

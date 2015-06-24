@@ -1,4 +1,4 @@
-package com.example.android.spotifystreamer;
+package com.example.android.spotifystreamer.fragments;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +12,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.Toast;
+
+import com.example.android.spotifystreamer.R;
+import com.example.android.spotifystreamer.adapter.SearchAdapter;
+import com.example.android.spotifystreamer.object.SearchObject;
 
 import java.util.ArrayList;
 

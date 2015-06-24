@@ -1,4 +1,4 @@
-package com.example.android.spotifystreamer;
+package com.example.android.spotifystreamer.object;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -8,9 +8,9 @@ import android.os.Parcelable;
  */
 public class SearchObject implements Parcelable{
 
-    String artistNames;
-    String artistImages;
-    String spotifyId;
+    public String artistNames;
+    public String artistImages;
+    public String spotifyId;
 
     public SearchObject(String artistNames,String artistImages,String spotifyId){
         this.artistNames=artistNames;

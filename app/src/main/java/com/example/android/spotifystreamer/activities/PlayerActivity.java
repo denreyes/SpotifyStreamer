@@ -1,4 +1,4 @@
-package com.example.android.spotifystreamer;
+package com.example.android.spotifystreamer.activities;
 
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -13,8 +13,11 @@ import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.example.android.spotifystreamer.R;
+import com.example.android.spotifystreamer.object.TopObject;
 import com.squareup.picasso.Picasso;
 
+import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 import at.markushi.ui.CircleButton;
@@ -36,8 +39,8 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     @InjectView(R.id.btnPlay) CircleButton btnPlay;
     @InjectView(R.id.btnNext) CircleButton btnNext;
     @InjectView(R.id.seekBar) SeekBar seekBar;
-    boolean stat = true;
-    int lengthInMilli;
+    ArrayList<TopObject> list;
+    int lengthInMilli,pos;
     Uri link;
     MediaPlayer mediaPlayer;
     private final Handler handler = new Handler();
@@ -49,16 +52,42 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         ButterKnife.inject(this);
 
         Intent i = getIntent();
-        txtTitle.setText(i.getStringExtra("TRACK_TITLE"));
-        txtAlbum.setText(i.getStringExtra("TRACK_ALBUM"));
-        txtArtist.setText(i.getStringExtra("TRACK_ARTIST"));
-        if(i.getStringExtra("TRACK_IMAGE")!="")
-            Picasso.with(this).load(i.getStringExtra("TRACK_IMAGE")).fit().centerCrop().into(imgTrack);
+        list = i.getParcelableArrayListExtra("TOP_OBJECT");
+        pos = i.getIntExtra("POSITION", 0);
+
+        initTrack(pos);
+
+        btnPrevious.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(pos > 0){
+                    initTrack(--pos);
+                }
+            }
+        });
+
+        btnNext.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (list.size()-1 > pos) {
+                    initTrack(++pos);
+                }
+            }
+        });
+    }
+
+    private void initTrack(int position){
+        txtStart.setText("0:00");
+        txtTitle.setText(list.get(position).trackTitle);
+        txtAlbum.setText(list.get(position).trackAlbum);
+        txtArtist.setText(list.get(position).trackArtist);
+        if(list.get(position).trackImage!="")
+            Picasso.with(this).load(list.get(position).trackImage).fit().centerCrop().into(imgTrack);
         else
             Picasso.with(this).load(R.drawable.noimg).fit().centerCrop().into(imgTrack);
 
-        link = Uri.parse(i.getStringExtra("TRACK_PLAY"));
-        seekBar.setMax(99); // It means 100% .0-99
+        link = Uri.parse(list.get(position).trackPlay);
+        seekBar.setMax(99);
         seekBar.setOnTouchListener(this);
         btnPlay.setOnClickListener(this);
 
@@ -67,17 +96,15 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
         mediaPlayer.setOnCompletionListener(this);
     }
 
-    /** Method which updates the SeekBar primary progress by current song playing position*/
     private void primarySeekBarProgressUpdater() {
         float progFloat = (((float)mediaPlayer.getCurrentPosition()/lengthInMilli)*100);
         long progLong = mediaPlayer.getCurrentPosition();
-        seekBar.setProgress((int) progFloat); // This math construction give a percentage of "was playing"/"song length"
+        seekBar.setProgress((int) progFloat);
         String prog = String.format("%d:%02d",
                 TimeUnit.MILLISECONDS.toMinutes(progLong),
                 TimeUnit.MILLISECONDS.toSeconds(progLong) -
                         TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(progLong)));
         txtStart.setText(""+prog);
-//        txtStart.setTextSize(currentMilli);
 
         if (mediaPlayer.isPlaying()) {
             Runnable notification = new Runnable() {
@@ -105,13 +132,13 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         if(v.getId() == R.id.btnPlay){
             try {
-                mediaPlayer.setDataSource(getApplicationContext(), link);// setup song from http://www.hrupin.com/wp-content/uploads/mp3/testsong_20_sec.mp3 URL to mediaplayer data source
-                mediaPlayer.prepare(); // you must call this method after setup the datasource in setDataSource method. After calling prepare() the instance of MediaPlayer starts load data from URL to internal buffer.
+                mediaPlayer.setDataSource(getApplicationContext(), link);
+                mediaPlayer.prepare();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
-            lengthInMilli = mediaPlayer.getDuration(); // gets the song length in milliseconds from URL
+            lengthInMilli = mediaPlayer.getDuration();
             txtEnd.setText(String.format("%d:%02d",
                     TimeUnit.MILLISECONDS.toMinutes(lengthInMilli),
                     TimeUnit.MILLISECONDS.toSeconds(lengthInMilli) -
@@ -131,14 +158,12 @@ public class PlayerActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-        /** MediaPlayer onCompletion event handler. Method which calls then song playing is complete*/
         btnPlay.setImageResource(R.drawable.ic_play);
     }
 
     @Override
     public boolean onTouch(View v, MotionEvent event) {
         if(v.getId() == R.id.seekBar){
-            /** Seekbar onTouch event handler. Method which seeks MediaPlayer to seekBar primary progress position*/
             if(mediaPlayer.isPlaying()){
                 SeekBar sb = (SeekBar)v;
                 int playPositionInMillisecconds = (lengthInMilli / 100) * sb.getProgress();

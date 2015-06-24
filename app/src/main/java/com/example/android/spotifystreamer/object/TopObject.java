@@ -1,4 +1,4 @@
-package com.example.android.spotifystreamer;
+package com.example.android.spotifystreamer.object;
 
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -8,7 +8,11 @@ import android.os.Parcelable;
  */
 public class TopObject implements Parcelable {
 
-    String trackTitle,trackAlbum,trackImage,trackArtist,trackPlay;
+    public String trackTitle;
+    public String trackAlbum;
+    public String trackImage;
+    public String trackArtist;
+    public String trackPlay;
 
     public TopObject(String trackTitle,String trackAlbum,String trackImage,
                      String trackArtist,String trackPlay){
