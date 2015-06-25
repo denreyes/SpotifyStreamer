@@ -16,8 +16,8 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.android.spotifystreamer.R;
-import com.example.android.spotifystreamer.adapter.TopAdapter;
 import com.example.android.spotifystreamer.activities.PlayerActivity;
+import com.example.android.spotifystreamer.adapter.TopAdapter;
 import com.example.android.spotifystreamer.object.TopObject;
 
 import java.util.ArrayList;
@@ -66,10 +66,19 @@ public class TopFragment extends Fragment {
         listTop.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent i = new Intent(getActivity(),PlayerActivity.class);
-                i.putParcelableArrayListExtra("TOP_OBJECT",list);
-                i.putExtra("POSITION",position);
-                startActivity(i);
+                if(getActivity().findViewById(R.id.container_beta) == null) {
+                    Intent i = new Intent(getActivity(), PlayerActivity.class);
+                    i.putParcelableArrayListExtra("TOP_OBJECT", list);
+                    i.putExtra("POSITION", position);
+                    startActivity(i);
+                }else{
+                    Bundle b = new Bundle();
+                    b.putParcelableArrayList("TOP_OBJECT", list);
+                    b.putInt("POSITION", position);
+                    PlayerDialogFragment playerDialogFragment = new PlayerDialogFragment();
+                    playerDialogFragment.setArguments(b);
+                    playerDialogFragment.show(getActivity().getSupportFragmentManager(),"PLAYER_DIALOG");
+                }
             }
         });
 

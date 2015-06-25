@@ -1,12 +1,11 @@
 package com.example.android.spotifystreamer.fragments;
 
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
+import android.support.v4.app.DialogFragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -30,16 +29,19 @@ import butterknife.InjectView;
 /**
  * Created by DJ on 6/25/2015.
  */
-public class PlayerFragment extends Fragment implements View.OnClickListener, View.OnTouchListener,
+public class PlayerDialogFragment extends DialogFragment implements View.OnClickListener, View.OnTouchListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnBufferingUpdateListener {
 
-    @InjectView(R.id.txtTrackArtist) TextView txtArtist;
+    @InjectView(R.id.txtTrackArtist)
+    TextView txtArtist;
     @InjectView(R.id.txtTrackAlbum) TextView txtAlbum;
-    @InjectView(R.id.imgTrack) ImageView imgTrack;
+    @InjectView(R.id.imgTrack)
+    ImageView imgTrack;
     @InjectView(R.id.txtTrackTitle) TextView txtTitle;
     @InjectView(R.id.txtStart) TextView txtStart;
     @InjectView(R.id.txtEnd) TextView txtEnd;
-    @InjectView(R.id.btnPrevious) CircleButton btnPrevious;
+    @InjectView(R.id.btnPrevious)
+    CircleButton btnPrevious;
     @InjectView(R.id.btnPlay) CircleButton btnPlay;
     @InjectView(R.id.btnNext) CircleButton btnNext;
     @InjectView(R.id.seekBar) SeekBar seekBar;
@@ -49,6 +51,20 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Vi
     MediaPlayer mediaPlayer;
     private final Handler handler = new Handler();
     String prog;
+
+    public static PlayerDialogFragment newInstance(){
+        PlayerDialogFragment frag = new PlayerDialogFragment();
+        Bundle args = new Bundle();
+//        args.putInt("title", title);
+        frag.setArguments(args);
+        return frag;
+    }
+
+//    @NonNull
+//    @Override
+//    public Dialog onCreateDialog(Bundle savedInstanceState) {
+//        return new AlertDialog.Builder(getActivity()).setView(R.layout.fragment_player).create();
+//    }
 
     @Nullable
     @Override
@@ -62,10 +78,10 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Vi
             pos = savedInstanceState.getInt("POSITION");
             list = savedInstanceState.getParcelableArrayList("TOP_OBJECT");
         }else {
-            Log.v("UHM","null");
-            Intent i = getActivity().getIntent();
-            list = i.getParcelableArrayListExtra("TOP_OBJECT");
-            pos = i.getIntExtra("POSITION", 0);
+            Bundle b = getArguments();
+            list = b.getParcelableArrayList("TOP_OBJECT");
+            pos = b.getInt("POSITION", 0);
+            Log.v("UHM", pos+"");
         }
         initTrack(pos);
         btnPrevious.setOnClickListener(new View.OnClickListener() {
