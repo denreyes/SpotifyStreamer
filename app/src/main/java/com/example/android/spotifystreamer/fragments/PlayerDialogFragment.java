@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -55,16 +54,9 @@ public class PlayerDialogFragment extends DialogFragment implements View.OnClick
     public static PlayerDialogFragment newInstance(){
         PlayerDialogFragment frag = new PlayerDialogFragment();
         Bundle args = new Bundle();
-//        args.putInt("title", title);
         frag.setArguments(args);
         return frag;
     }
-
-//    @NonNull
-//    @Override
-//    public Dialog onCreateDialog(Bundle savedInstanceState) {
-//        return new AlertDialog.Builder(getActivity()).setView(R.layout.fragment_player).create();
-//    }
 
     @Nullable
     @Override
@@ -81,7 +73,6 @@ public class PlayerDialogFragment extends DialogFragment implements View.OnClick
             Bundle b = getArguments();
             list = b.getParcelableArrayList("TOP_OBJECT");
             pos = b.getInt("POSITION", 0);
-            Log.v("UHM", pos+"");
         }
         initTrack(pos);
         btnPrevious.setOnClickListener(new View.OnClickListener() {

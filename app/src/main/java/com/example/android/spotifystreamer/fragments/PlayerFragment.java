@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
@@ -62,7 +61,6 @@ public class PlayerFragment extends Fragment implements View.OnClickListener, Vi
             pos = savedInstanceState.getInt("POSITION");
             list = savedInstanceState.getParcelableArrayList("TOP_OBJECT");
         }else {
-            Log.v("UHM","null");
             Intent i = getActivity().getIntent();
             list = i.getParcelableArrayListExtra("TOP_OBJECT");
             pos = i.getIntExtra("POSITION", 0);
