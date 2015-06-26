@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.android.spotifystreamer.R;
@@ -16,6 +15,7 @@ import java.util.ArrayList;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
  * Created by DJ on 6/11/2015.
@@ -68,7 +68,7 @@ public class SearchAdapter extends BaseAdapter {
 
     static class SearchHolder{
         @InjectView(R.id.txtSearchName) TextView txtArtist;
-        @InjectView(R.id.imgSearchArtist) ImageView imgArtist;
+        @InjectView(R.id.imgSearchArtist) CircleImageView imgArtist;
 
         public SearchHolder(View view){
             ButterKnife.inject(this, view);
