@@ -43,11 +43,9 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
     @InjectView(R.id.seekBar) SeekBar seekBar;
     private ArrayList<TopObject> list;
     private int pos;
-    boolean boolMusicPlaying = false;
+    int switchPlay = 0;
     String prog;
     Intent playerService;
-    private int seekMax;
-    private static int songEnded = 0;
     boolean mBroadcastIsRegistered;
 
     public static final String BROADCAST_PAUSEPLAY = "com.example.android.spotifystreamer.fragments.sendpauseplay";
@@ -68,16 +66,15 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
             txtStart.setText(savedInstanceState.getString("CURRENT"));
             pos = savedInstanceState.getInt("POSITION");
             list = savedInstanceState.getParcelableArrayList("TOP_OBJECT");
+            switchPlay = savedInstanceState.getInt("SWITCH_PLAY");
+            initTrack(pos);
+            initPlay();
         }else {
             Intent i = getActivity().getIntent();
             list = i.getParcelableArrayListExtra("TOP_OBJECT");
             pos = i.getIntExtra("POSITION", 0);
-        }
-        initTrack(pos);
-        if(!boolMusicPlaying){
-            btnPlay.setImageResource(R.drawable.ic_pause);
-            playAudio();
-            boolMusicPlaying=true;
+            initTrack(pos);
+            initPlay();
         }
         setListeners();
 
@@ -95,12 +92,12 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
 
     @Override
     public void onResume() {
+        super.onResume();
         if(!mBroadcastIsRegistered) {
             getActivity().registerReceiver(broadcastReceiver,
                     new IntentFilter(PlayerService.BROADCAST_ACTION));
             mBroadcastIsRegistered=true;
         }
-        super.onResume();
     }
 
     private void initTrack(int position){
@@ -132,6 +129,8 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
             public void onClick(View v) {
                 if (pos > 0) {
                     initTrack(--pos);
+                    stopAudio();
+                    initPlay();
                 }
             }
         });
@@ -141,6 +140,8 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
             public void onClick(View v) {
                 if (list.size() - 1 > pos) {
                     initTrack(++pos);
+                    stopAudio();
+                    initPlay();
                 }
             }
         });
@@ -148,7 +149,10 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onPausePlay();
+                if(switchPlay==0)
+                    initPlay();
+                else
+                    onPausePlay();
             }
         });
 
@@ -156,17 +160,22 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
     }
 
     private void onPausePlay(){
-//        if(!boolMusicPlaying){
-            getActivity().sendBroadcast(pauseplayIntent);
+        if(switchPlay==1){
+            btnPlay.setImageResource(R.drawable.ic_play);
+            switchPlay=2;
+        }else if(switchPlay==2){
+            btnPlay.setImageResource(R.drawable.ic_pause);
+            switchPlay=1;
+        }
+        getActivity().sendBroadcast(pauseplayIntent);
+    }
 
-//            btnPlay.setImageResource(R.drawable.ic_pause);
-//            playAudio();
-//            boolMusicPlaying=true;
-//        }else{
-//            btnPlay.setImageResource(R.drawable.ic_play);
-//            stopAudio();
-//            boolMusicPlaying=false;
-//        }
+    private void initPlay(){
+        btnPlay.setImageResource(R.drawable.ic_pause);
+        if(switchPlay==0){
+            playAudio();
+            switchPlay=1;
+        }
     }
 
     private void playAudio() {
@@ -184,7 +193,7 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
         }
 
         getActivity().stopService(playerService);
-        seekBar.setProgress(0);
+        switchPlay = 0;
     }
 
     @Override
@@ -193,6 +202,7 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
         outState.putString("CURRENT", prog);
         outState.putParcelableArrayList("TOP_OBJECT", list);
         outState.putInt("POSITION", pos);
+        outState.putInt("SWITCH_PLAY",switchPlay);
     }
 
     private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
@@ -211,9 +221,12 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
         txtStart.setText(formatMinutes(seekProgress));
         txtEnd.setText(formatMinutes(seekMax));
 
-//        if(songEnded == 1){
-//            btnPlay.setImageResource(R.drawable.ic_play);
-//        }
+        if(formatMinutes(seekProgress).equals(formatMinutes(seekMax))){
+            btnPlay.setImageResource(R.drawable.ic_play);
+            txtStart.setText("0:00");
+            seekBar.setProgress(0);
+            stopAudio();
+        }
     }
 
     @Override
