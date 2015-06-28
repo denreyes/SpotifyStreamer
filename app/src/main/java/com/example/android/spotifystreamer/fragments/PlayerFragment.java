@@ -1,7 +1,9 @@
 package com.example.android.spotifystreamer.fragments;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
-import android.net.Uri;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -18,6 +20,7 @@ import com.example.android.spotifystreamer.service.PlayerService;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
+import java.util.concurrent.TimeUnit;
 
 import at.markushi.ui.CircleButton;
 import butterknife.ButterKnife;
@@ -26,7 +29,7 @@ import butterknife.InjectView;
 /**
  * Created by DJ on 6/25/2015.
  */
-public class PlayerFragment extends Fragment{
+public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeListener{
 
     @InjectView(R.id.txtTrackArtist) TextView txtArtist;
     @InjectView(R.id.txtTrackAlbum) TextView txtAlbum;
@@ -38,12 +41,17 @@ public class PlayerFragment extends Fragment{
     @InjectView(R.id.btnPlay) CircleButton btnPlay;
     @InjectView(R.id.btnNext) CircleButton btnNext;
     @InjectView(R.id.seekBar) SeekBar seekBar;
-    ArrayList<TopObject> list;
-    int pos;
+    private ArrayList<TopObject> list;
+    private int pos;
     boolean boolMusicPlaying = false;
-    Uri link;
     String prog;
     Intent playerService;
+    private int seekMax;
+    private static int songEnded = 0;
+    boolean mBroadcastIsRegistered;
+
+    public static final String BROADCAST_SEEKBAR = "com.example.android.spotifystreamer.fragments.sendseekbar";
+    Intent seekIntent;
 
     @Nullable
     @Override
@@ -52,6 +60,7 @@ public class PlayerFragment extends Fragment{
         View rootView = inflater.inflate(R.layout.fragment_player,container,false);
         ButterKnife.inject(this, rootView);
         playerService = new Intent(getActivity(),PlayerService.class);
+        seekIntent = new Intent(BROADCAST_SEEKBAR);
 
         if(savedInstanceState!=null) {
             txtStart.setText(savedInstanceState.getString("CURRENT"));
@@ -68,6 +77,25 @@ public class PlayerFragment extends Fragment{
         return rootView;
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(mBroadcastIsRegistered){
+            getActivity().unregisterReceiver(broadcastReceiver);
+            mBroadcastIsRegistered = false;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        if(!mBroadcastIsRegistered) {
+            getActivity().registerReceiver(broadcastReceiver,
+                    new IntentFilter(PlayerService.BROADCAST_ACTION));
+            mBroadcastIsRegistered=true;
+        }
+        super.onResume();
+    }
+
     private void initTrack(int position){
 
         txtTitle.setText(list.get(position).trackTitle);
@@ -78,7 +106,16 @@ public class PlayerFragment extends Fragment{
         else
             Picasso.with(getActivity()).load(R.drawable.noimg).fit().centerCrop().into(imgTrack);
 
-        link = Uri.parse(list.get(position).trackPlay);
+        playerService.putParcelableArrayListExtra("TOP_OBJECT", list);
+        playerService.putExtra("POSITION", pos);
+    }
+
+    private String formatMinutes(long millis){
+        return String.format("%d:%02d",
+                TimeUnit.MILLISECONDS.toMinutes(millis),
+                TimeUnit.MILLISECONDS.toSeconds(millis) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis))
+        );
     }
 
 
@@ -104,32 +141,40 @@ public class PlayerFragment extends Fragment{
         btnPlay.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                btnPlay.setImageResource(R.drawable.ic_pause);
                 onPausePlay();
             }
         });
+
+        seekBar.setOnSeekBarChangeListener(this);
     }
 
     private void onPausePlay(){
         if(!boolMusicPlaying){
-            btnPlay.setBackgroundResource(R.drawable.ic_pause);
+            btnPlay.setImageResource(R.drawable.ic_pause);
             playAudio();
         }else{
-            btnPlay.setBackgroundResource(R.drawable.ic_play);
+            btnPlay.setImageResource(R.drawable.ic_play);
             stopAudio();
         }
     }
 
     private void playAudio() {
-        playerService.putExtra("LINK",link.toString());
-        //TODO:SURROUND W/ TRY-CATCH
         getActivity().startService(playerService);
         boolMusicPlaying=true;
+
+        getActivity().registerReceiver(broadcastReceiver, new IntentFilter(
+                PlayerService.BROADCAST_ACTION));
+        mBroadcastIsRegistered = true;
     }
 
     private void stopAudio() {
-        //TODO:SURROUND W/ TRY-CATCH
+        if(mBroadcastIsRegistered) {
+            getActivity().unregisterReceiver(broadcastReceiver);
+            mBroadcastIsRegistered = false;
+        }
+
         getActivity().stopService(playerService);
+        seekBar.setProgress(0);
         boolMusicPlaying=false;
     }
 
@@ -139,5 +184,45 @@ public class PlayerFragment extends Fragment{
         outState.putString("CURRENT", prog);
         outState.putParcelableArrayList("TOP_OBJECT", list);
         outState.putInt("POSITION", pos);
+    }
+
+    private BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateUI(intent);
+        }
+    };
+
+    private void updateUI(Intent playerService) {
+        int seekProgress = playerService.getIntExtra("counter",0);
+        int seekMax = playerService.getIntExtra("mediamax",0);
+
+        seekBar.setMax(seekMax);
+        seekBar.setProgress(seekProgress);
+        txtStart.setText(formatMinutes(seekProgress));
+        txtEnd.setText(formatMinutes(seekMax));
+
+//        if(songEnded == 1){
+//            btnPlay.setImageResource(R.drawable.ic_play);
+//        }
+    }
+
+    @Override
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+        if (fromUser){
+            int seekPos = seekBar.getProgress();
+            seekIntent.putExtra("seekpos",seekPos);
+            getActivity().sendBroadcast(seekIntent);
+        }
+    }
+
+    @Override
+    public void onStartTrackingTouch(SeekBar seekBar) {
+
+    }
+
+    @Override
+    public void onStopTrackingTouch(SeekBar seekBar) {
+
     }
 }

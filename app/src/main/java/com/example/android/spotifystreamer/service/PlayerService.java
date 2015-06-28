@@ -4,16 +4,22 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
+import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
 
 import com.example.android.spotifystreamer.R;
 import com.example.android.spotifystreamer.activities.PlayerActivity;
+import com.example.android.spotifystreamer.fragments.PlayerFragment;
+import com.example.android.spotifystreamer.object.TopObject;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by DJ on 6/26/2015.
@@ -24,10 +30,21 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
     private static final String LOG_TAG = PlayerService.class.getSimpleName();
     private static final int NOTIFICATION_ID = 1;
     private MediaPlayer mediaPlayer = new MediaPlayer();
-    private String link;
+    private ArrayList<TopObject> list;
+    private int pos;
+
+    int mediaPos;
+    int mediaMax;
+    private final Handler handler = new Handler();
+    private static int songEnded;
+    public static final String BROADCAST_ACTION = "com.example.android.spotifystreamer.service.seekprogress";
+    Intent seekIntent;
 
     @Override
     public void onCreate() {
+        seekIntent = new Intent(BROADCAST_ACTION);
+
+        mediaPlayer.setOnSeekCompleteListener(this);
         mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.setOnErrorListener(this);
         mediaPlayer.setOnPreparedListener(this);
@@ -39,19 +56,69 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        initNotification();
 
-        link = intent.getExtras().getString("LINK");
+        registerReceiver(seekReceiver, new IntentFilter(PlayerFragment.BROADCAST_SEEKBAR));
+
+        list = intent.getParcelableArrayListExtra("TOP_OBJECT");
+        pos = intent.getIntExtra("POSITION", 0);
+        initNotification();
         mediaPlayer.reset();
         if (!mediaPlayer.isPlaying()) {
             try {
-                mediaPlayer.setDataSource(link);
+                mediaPlayer.setDataSource(list.get(pos).trackPlay);
                 mediaPlayer.prepareAsync();
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+
+        setupHandler();
         return START_STICKY;
+    }
+
+    private void setupHandler() {
+        handler.removeCallbacks(sendUpdatesToUI);
+        handler.post(sendUpdatesToUI);
+//        handler.postDelayed(sendUpdatesToUI, 1000);
+    }
+
+    private Runnable sendUpdatesToUI = new Runnable() {
+        @Override
+        public void run() {
+            LogMediaPosition();
+            handler.post(this);
+        }
+    };
+
+    private void LogMediaPosition(){
+        if(mediaPlayer.isPlaying()){
+            mediaPos = mediaPlayer.getCurrentPosition();
+
+            mediaMax = mediaPlayer.getDuration();
+            seekIntent.putExtra("counter", mediaPos);
+            seekIntent.putExtra("mediamax", mediaMax);
+            sendBroadcast(seekIntent);
+        }
+    }
+
+    // --Receive seekbar position if it has been changed by the user in the
+    // activity
+    private BroadcastReceiver seekReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            updateSeekPos(intent);
+        }
+    };
+
+    // Update seek position from Activity
+    public void updateSeekPos(Intent intent) {
+        int seekPos = intent.getIntExtra("seekpos", 0);
+        if (mediaPlayer.isPlaying()) {
+            handler.removeCallbacks(sendUpdatesToUI);
+            mediaPlayer.seekTo(seekPos);
+            setupHandler();
+        }
+
     }
 
     @Override
@@ -65,6 +132,8 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
         }
 
         cancelNotification();
+        handler.removeCallbacks(sendUpdatesToUI);
+        unregisterReceiver(seekReceiver);
     }
 
     @Override
@@ -114,7 +183,7 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
 
     @Override
     public void onSeekComplete(MediaPlayer mp) {
-
+        playMedia();
     }
 
     public void playMedia() {
@@ -138,7 +207,7 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
         Intent notificationIntent = new Intent(this, PlayerActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0,
                 notificationIntent, 0);
-        notification.setLatestEventInfo(getApplicationContext(), "Title", "Content", contentIntent);
+        notification.setLatestEventInfo(getApplicationContext(), list.get(pos).trackTitle, list.get(pos).trackArtist, contentIntent);
         mNotificationManager.notify(NOTIFICATION_ID,notification);
     }
 
