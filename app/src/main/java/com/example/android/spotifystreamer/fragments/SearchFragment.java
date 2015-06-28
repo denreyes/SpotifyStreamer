@@ -47,10 +47,10 @@ public class SearchFragment extends Fragment {
         ButterKnife.inject(this, rootView);
         edtSearch.onActionViewExpanded();
 
-        if(savedInstanceState!=null) {
+        if(savedInstanceState!=null && edtSearch.getQuery()!="") {
             edtSearch.setQuery(savedInstanceState.getString("SEARCH_QUERY"), false);
             list = savedInstanceState.getParcelableArrayList("SEARCH_OBJECT");
-            SearchAdapter adapter = new SearchAdapter(getActivity(),list);
+            SearchAdapter adapter = new SearchAdapter(getActivity(), list);
             listSearch.setAdapter(adapter);
         }
 
