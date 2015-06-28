@@ -50,8 +50,9 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
     private static int songEnded = 0;
     boolean mBroadcastIsRegistered;
 
+    public static final String BROADCAST_PAUSEPLAY = "com.example.android.spotifystreamer.fragments.sendpauseplay";
     public static final String BROADCAST_SEEKBAR = "com.example.android.spotifystreamer.fragments.sendseekbar";
-    Intent seekIntent;
+    Intent seekIntent, pauseplayIntent;
 
     @Nullable
     @Override
@@ -61,6 +62,7 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
         ButterKnife.inject(this, rootView);
         playerService = new Intent(getActivity(),PlayerService.class);
         seekIntent = new Intent(BROADCAST_SEEKBAR);
+        pauseplayIntent = new Intent(BROADCAST_PAUSEPLAY);
 
         if(savedInstanceState!=null) {
             txtStart.setText(savedInstanceState.getString("CURRENT"));
@@ -72,6 +74,11 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
             pos = i.getIntExtra("POSITION", 0);
         }
         initTrack(pos);
+        if(!boolMusicPlaying){
+            btnPlay.setImageResource(R.drawable.ic_pause);
+            playAudio();
+            boolMusicPlaying=true;
+        }
         setListeners();
 
         return rootView;
@@ -149,18 +156,21 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
     }
 
     private void onPausePlay(){
-        if(!boolMusicPlaying){
-            btnPlay.setImageResource(R.drawable.ic_pause);
-            playAudio();
-        }else{
-            btnPlay.setImageResource(R.drawable.ic_play);
-            stopAudio();
-        }
+//        if(!boolMusicPlaying){
+            getActivity().sendBroadcast(pauseplayIntent);
+
+//            btnPlay.setImageResource(R.drawable.ic_pause);
+//            playAudio();
+//            boolMusicPlaying=true;
+//        }else{
+//            btnPlay.setImageResource(R.drawable.ic_play);
+//            stopAudio();
+//            boolMusicPlaying=false;
+//        }
     }
 
     private void playAudio() {
         getActivity().startService(playerService);
-        boolMusicPlaying=true;
 
         getActivity().registerReceiver(broadcastReceiver, new IntentFilter(
                 PlayerService.BROADCAST_ACTION));
@@ -175,7 +185,6 @@ public class PlayerFragment extends Fragment implements SeekBar.OnSeekBarChangeL
 
         getActivity().stopService(playerService);
         seekBar.setProgress(0);
-        boolMusicPlaying=false;
     }
 
     @Override

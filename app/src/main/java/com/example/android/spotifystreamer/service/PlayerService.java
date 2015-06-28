@@ -58,6 +58,7 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
     public int onStartCommand(Intent intent, int flags, int startId) {
 
         registerReceiver(seekReceiver, new IntentFilter(PlayerFragment.BROADCAST_SEEKBAR));
+        registerReceiver(pauseplayReceiver, new IntentFilter(PlayerFragment.BROADCAST_PAUSEPLAY));
 
         list = intent.getParcelableArrayListExtra("TOP_OBJECT");
         pos = intent.getIntExtra("POSITION", 0);
@@ -101,8 +102,6 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
         }
     }
 
-    // --Receive seekbar position if it has been changed by the user in the
-    // activity
     private BroadcastReceiver seekReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -110,7 +109,6 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
         }
     };
 
-    // Update seek position from Activity
     public void updateSeekPos(Intent intent) {
         int seekPos = intent.getIntExtra("seekpos", 0);
         if (mediaPlayer.isPlaying()) {
@@ -120,6 +118,17 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
         }
 
     }
+
+    private BroadcastReceiver pauseplayReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if(mediaPlayer.isPlaying()){
+                pauseMedia();
+            }else{
+                playMedia();
+            }
+        }
+    };
 
     @Override
     public void onDestroy() {
@@ -133,6 +142,7 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
 
         cancelNotification();
         handler.removeCallbacks(sendUpdatesToUI);
+        unregisterReceiver(pauseplayReceiver);
         unregisterReceiver(seekReceiver);
     }
 
@@ -189,6 +199,12 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
     public void playMedia() {
         if (!mediaPlayer.isPlaying()) {
             mediaPlayer.start();
+        }
+    }
+
+    public void pauseMedia() {
+        if (mediaPlayer.isPlaying()) {
+            mediaPlayer.pause();
         }
     }
 
