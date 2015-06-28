@@ -1,22 +1,21 @@
 package com.example.android.spotifystreamer.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Handler;
 import android.os.IBinder;
 import android.widget.Toast;
 
-import com.example.android.spotifystreamer.R;
-import com.example.android.spotifystreamer.activities.PlayerActivity;
 import com.example.android.spotifystreamer.fragments.PlayerFragment;
 import com.example.android.spotifystreamer.object.TopObject;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
     private static int songEnded;
     public static final String BROADCAST_ACTION = "com.example.android.spotifystreamer.service.seekprogress";
     Intent seekIntent;
+    private Bitmap albumArt;
 
     @Override
     public void onCreate() {
@@ -62,7 +62,6 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
 
         list = intent.getParcelableArrayListExtra("TOP_OBJECT");
         pos = intent.getIntExtra("POSITION", 0);
-        initNotification();
         mediaPlayer.reset();
         if (!mediaPlayer.isPlaying()) {
             try {
@@ -140,7 +139,6 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
             mediaPlayer.release();
         }
 
-        cancelNotification();
         handler.removeCallbacks(sendUpdatesToUI);
         unregisterReceiver(pauseplayReceiver);
         unregisterReceiver(seekReceiver);
@@ -214,22 +212,20 @@ public class PlayerService extends Service implements MediaPlayer.OnCompletionLi
         }
     }
 
-    private void initNotification() {
-        String notificationService = Context.NOTIFICATION_SERVICE;
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(notificationService);
-        Notification notification = new Notification(R.drawable.ic_play,
-                "Music in Service",System.currentTimeMillis());
-        notification.flags = Notification.FLAG_ONGOING_EVENT;
-        Intent notificationIntent = new Intent(this, PlayerActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(), 0,
-                notificationIntent, 0);
-        notification.setLatestEventInfo(getApplicationContext(), list.get(pos).trackTitle, list.get(pos).trackArtist, contentIntent);
-        mNotificationManager.notify(NOTIFICATION_ID,notification);
-    }
+    private Target target = new Target() {
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            albumArt = bitmap;
+        }
 
-    private void cancelNotification() {
-        String notificationService = Context.NOTIFICATION_SERVICE;
-        NotificationManager mNotificationManager = (NotificationManager) getSystemService(notificationService);
-        mNotificationManager.cancel(NOTIFICATION_ID);
-    }
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable) {
+
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+        }
+    };
 }
